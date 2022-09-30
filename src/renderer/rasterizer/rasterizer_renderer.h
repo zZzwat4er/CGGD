@@ -2,7 +2,6 @@
 #include "renderer/renderer.h"
 #include "resource.h"
 
-
 namespace cg::renderer
 {
 	class rasterization_renderer : public renderer
