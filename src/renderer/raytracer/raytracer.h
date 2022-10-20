@@ -146,7 +146,7 @@ namespace cg::renderer
 		width = in_width;
 		height = in_height;
 
-		history = std::make_shared<cg::resource<float3>>(width, height)
+		history = std::make_shared<cg::resource<float3>>(width, height);
 	}
 
 	template<typename VB, typename RT>
@@ -203,7 +203,7 @@ namespace cg::renderer
 		for(int frame_id=0; frame_id < accumulation_num; frame_id++)
 		{
 			std::cout << "Tracing frame #" << frame_id + 1 << std::endl;
-			float2 jitter = get_jitter();
+			float2 jitter = get_jitter(frame_id);
 			for (int x = 0; x < width; x++)
 			{
 #pragma omp parallel for
