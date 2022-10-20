@@ -286,7 +286,7 @@ namespace cg::renderer
 	inline void aabb<VB>::add_triangle(const triangle<VB> triangle)
 	{
 		if(triangles.empty()) aabb_max = aabb_min = triangle.a;
-		triangles.push_back();
+		triangles.push_back(triangle);
 		aabb_max = max(aabb_max, triangle.a);
 		aabb_max = max(aabb_max, triangle.b);
 		aabb_max = max(aabb_max, triangle.c);
