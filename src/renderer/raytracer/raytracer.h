@@ -54,7 +54,21 @@ namespace cg::renderer
 	inline triangle<VB>::triangle(
 			const VB& vertex_a, const VB& vertex_b, const VB& vertex_c)
 	{
-		// TODO Lab: 2.02 Implement a constructor of `triangle` struct
+		a = float3{vertex_a.x, vertex_a.y, vertex_a.z};
+		b = float3{vertex_b.x, vertex_b.y, vertex_b.z};
+		c = float3{vertex_c.x, vertex_c.y, vertex_c.z};
+
+		ba = b - a;
+		ca = c - a;
+
+		na = float3{vertex_a.nx, vertex_a.ny, vertex_a.nz};
+		nb = float3{vertex_b.nx, vertex_b.ny, vertex_b.nz};
+		nc = float3{vertex_c.nx, vertex_c.ny, vertex_c.nz};
+
+		ambient = float3{vertex_a.ambient_r, vertex_a.ambient_g, vertex_a.ambient_b};
+		diffuse = float3{vertex_a.diffuse_r, vertex_a.diffuse_g, vertex_a.diffuse_b};
+		emissive = float3{vertex_a.emissive_r, vertex_a.emissive_g, vertex_a.emissive_b};
+
 	}
 
 	template<typename VB>
@@ -148,13 +162,13 @@ namespace cg::renderer
 	template<typename VB, typename RT>
 	inline void raytracer<VB, RT>::set_vertex_buffers(std::vector<std::shared_ptr<cg::resource<VB>>> in_vertex_buffers)
 	{
-		// TODO Lab: 2.02 Implement `set_vertex_buffers` and `set_index_buffers` of `raytracer` class
+		vertex_buffers = in_vertex_buffers;
 	}
 
 	template<typename VB, typename RT>
 	void raytracer<VB, RT>::set_index_buffers(std::vector<std::shared_ptr<cg::resource<unsigned int>>> in_index_buffers)
 	{
-		// TODO Lab: 2.02 Implement `set_vertex_buffers` and `set_index_buffers` of `raytracer` class
+		index_buffers = in_index_buffers;
 	}
 
 	template<typename VB, typename RT>
@@ -171,6 +185,7 @@ namespace cg::renderer
 	{
 		for(int x = 0; x < width; x++)
 		{
+#pragma omp parallel for
 			for(int y = 0; y < height; y++){
 				float u = (2.f * x) / static_cast<float>(width - 1) - 1.f;
 				float v = (2.f * y) / static_cast<float>(height - 1) - 1.f;
