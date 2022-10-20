@@ -145,7 +145,8 @@ namespace cg::renderer
 	{
 		width = in_width;
 		height = in_height;
-		// TODO Lab: 2.06 Add `history` resource in `raytracer` class
+
+		history = std::make_shared<cg::resource<float3>>(width, height)
 	}
 
 	template<typename VB, typename RT>
@@ -155,8 +156,8 @@ namespace cg::renderer
 		for(size_t i = 0; i < render_target->get_number_of_elements(); i++)
 		{
 			render_target->item(i) = in_clear_value;
+			history->item(i) = float3{0.f, 0.f, 0.f};
 		}
-		// TODO Lab: 2.06 Add `history` resource in `raytracer` class
 	}
 
 	template<typename VB, typename RT>
