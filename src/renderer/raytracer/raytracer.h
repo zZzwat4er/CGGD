@@ -174,7 +174,21 @@ namespace cg::renderer
 	template<typename VB, typename RT>
 	inline void raytracer<VB, RT>::build_acceleration_structure()
 	{
-		// TODO Lab: 2.02 Fill `triangles` vector in `build_acceleration_structure` of `raytracer` class
+		for(size_t shape_id = 0; shape_id < index_buffers.size(); shape_id++)
+		{
+			auto& index_buffer = index_buffers[shape_id];
+			auto& vertex_buffer = vertex_buffers[shape_id];
+			size_t index_id = 0;
+			while(index_id < index_buffer->get_number_of_elements())
+			{
+				triangle<VB> triangle(
+						vertex_buffer->item(index_buffer->item(index_id++)),
+						vertex_buffer->item(index_buffer->item(index_id++)),
+						vertex_buffer->item(index_buffer->item(index_id++))
+						);
+				triangles.push_back(triangle);
+			}
+		}
 		// TODO Lab: 2.05 Implement `build_acceleration_structure` method of `raytracer` class
 	}
 
