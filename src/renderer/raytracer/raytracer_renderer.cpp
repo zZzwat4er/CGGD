@@ -38,6 +38,10 @@ void cg::renderer::ray_tracing_renderer::init()
 			float3{0.78f, 0.78f, 0.78f}
 	});
 
+	shadow_raytracer = std::make_shared<cg::renderer::raytracer<cg::vertex, cg::unsigned_color>>();
+	shadow_raytracer->set_vertex_buffers(model->get_vertex_buffers());
+	shadow_raytracer->set_index_buffers(model->get_index_buffers());
+
 	// TODO Lab: 2.04 Initialize `shadow_raytracer` in `ray_tracing_renderer`
 }
 
@@ -72,7 +76,19 @@ void cg::renderer::ray_tracing_renderer::render()
 		return payload;
 	};
 
+	shadow_raytracer->miss_shader = [](const ray& ray){
+		payload payload{};
+		payload.t = -1.f;
+		return payload;
+	};
+
+	shadow_raytracer->any_hit_shader = [](const ray& ray, payload& payload, const triangle<cg::vertex>& triangle)
+	{
+		return payload;
+	};
+
 	raytracer->build_acceleration_structure();
+	shadow_raytracer->build_acceleration_structure();
 
 	auto start = std::chrono::high_resolution_clock::now();
 	raytracer->ray_generation(camera->get_position(),
@@ -87,7 +103,6 @@ void cg::renderer::ray_tracing_renderer::render()
 	cg::utils::save_resource(*render_target, settings->result_path);
 
 
-	// TODO Lab: 2.04 Define `any_hit_shader` and `miss_shader` for `shadow_raytracer`
 	// TODO Lab: 2.04 Adjust `closest_hit_shader` of `raytracer` to cast shadows rays and to ignore occluded lights
 	// TODO Lab: 2.05 Adjust `ray_tracing_renderer` class to build the acceleration structure
 	// TODO Lab: 2.06 (Bonus) Adjust `closest_hit_shader` for Monte-Carlo light tracing
