@@ -227,13 +227,17 @@ namespace cg::renderer
 		closest_hit_payload.t = max_t;
 		const triangle<VB>* closest_triangle = nullptr;
 
-		for(auto & triangle : triangles){
-			payload payload = intersection_shader(triangle, ray);
-			if(payload.t > min_t && payload.t < closest_hit_payload.t)
+		for(auto & aabb : acceleration_structures){
+			if(!aabb.aabb_test(ray)) continue;
+			for(auto& triangle : aabb.get_triangles())
 			{
-				closest_hit_payload = payload;
-				closest_triangle = &triangle;
-				if(any_hit_shader) return any_hit_shader(ray, payload, triangle);
+				payload payload = intersection_shader(triangle, ray);
+				if(payload.t > min_t && payload.t < closest_hit_payload.t)
+				{
+					closest_hit_payload = payload;
+					closest_triangle = &triangle;
+					if(any_hit_shader) return any_hit_shader(ray, payload, triangle);
+				}
 			}
 		}
 
@@ -243,7 +247,6 @@ namespace cg::renderer
 		}
 
 		return miss_shader(ray);
-		// TODO Lab: 2.05 Adjust `trace_ray` method of `raytracer` class to traverse the acceleration structure
 	}
 
 	template<typename VB, typename RT>
