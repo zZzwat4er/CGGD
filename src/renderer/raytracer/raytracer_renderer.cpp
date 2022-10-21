@@ -56,22 +56,30 @@ void cg::renderer::ray_tracing_renderer::render()
 		payload.color = {
 				0.f,
 				0.f,
-				(ray.direction.y + 1.f) * 0.5f
+				0.f
 		};
 		return payload;
 	};
-
+	std::random_device dev;
+	std::mt19937 gen(dev());
+	std::uniform_real_distribution<float> uniformRealDistribution(-1, 1);
 	raytracer->closest_hit_shader = [&](const ray& ray, payload& payload, const triangle<cg::vertex>& triangle, size_t depth){
+
+		float3 normal = normalize(payload.bary.x * triangle.na + payload.bary.y * triangle.nb + payload.bary.z * triangle.nc);
+		float3 position = ray.position + payload.t * ray.direction;
 		float3 result_color = triangle.emissive;
-		for(auto& light: lights)
-		{
-			float3 normal = normalize(payload.bary.x * triangle.na + payload.bary.y * triangle.nb + payload.bary.z * triangle.nc);
-			float3 position = ray.position + payload.t * ray.direction;
-			cg::renderer::ray to_light(position, light.position - position);
-			auto shadow_payload = shadow_raytracer->trace_ray(to_light, 1, length(light.position - position));
-			if(shadow_payload.t < 0.f) {
-				result_color += triangle.diffuse * light.color * std::max(dot(normal, to_light.direction), 0.f);
+		for(int i = 0; i < depth; i++) {
+			float3 random_dir{
+					uniformRealDistribution(gen),
+					uniformRealDistribution(gen),
+					uniformRealDistribution(gen)};
+			if (dot(normal, random_dir) < 0.f) {
+				random_dir = -random_dir;
 			}
+			cg::renderer::ray to_next_object(position, random_dir);
+			auto payload_next = raytracer->trace_ray(to_next_object, depth);
+			result_color += triangle.diffuse * payload_next.color.to_float3() * std::max(dot(normal, to_next_object.direction), 0.f);
+
 		}
 		payload.color = cg::color::from_float3(result_color);
 		return payload;

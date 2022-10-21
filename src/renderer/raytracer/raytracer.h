@@ -200,6 +200,7 @@ namespace cg::renderer
 			float3 right, float3 up, size_t depth, size_t accumulation_num)
 	{
 		float frame_weight = 1.f / static_cast<float>(accumulation_num);
+		frame_weight /= static_cast<float>(depth);
 		for(int frame_id=0; frame_id < accumulation_num; frame_id++)
 		{
 			std::cout << "Tracing frame #" << frame_id + 1 << std::endl;
@@ -220,8 +221,8 @@ namespace cg::renderer
 							payload.color.r,
 							payload.color.g,
 							payload.color.b
-					});
-					render_target->item(x, y) = RT::from_float3(history_pixel);
+					} * frame_weight);
+					if(frame_id == accumulation_num - 1) render_target->item(x, y) = RT::from_float3(history_pixel);
 				}
 			}
 		}
