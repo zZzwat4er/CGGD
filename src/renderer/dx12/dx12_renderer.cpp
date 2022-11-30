@@ -241,8 +241,12 @@ D3D12_VERTEX_BUFFER_VIEW cg::renderer::dx12_renderer::create_vertex_buffer_view(
 
 D3D12_INDEX_BUFFER_VIEW cg::renderer::dx12_renderer::create_index_buffer_view(const ComPtr<ID3D12Resource>& index_buffer, const UINT index_buffer_size)
 {
-	D3D12_INDEX_BUFFER_VIEW{};
-	return
+	D3D12_INDEX_BUFFER_VIEW view{};
+	view.BufferLocation = index_buffer->GetGPUVirtualAddress();
+	view.SizeInBytes = index_buffer_size;
+	view.Format = DXGI_FORMAT_R32_UINT;
+
+	return view;
 }
 
 void cg::renderer::dx12_renderer::create_shader_resource_view(const ComPtr<ID3D12Resource>& texture, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handler)
@@ -289,6 +293,10 @@ void cg::renderer::dx12_renderer::load_assets()
 				vertex_buffer_name
 				);
 		copy_data(vertex_buffer_data->get_data(), vertex_buffer_size, vertex_buffers[i]);
+		vertex_buffer_views[i] = create_vertex_buffer_view(
+				vertex_buffers[i],
+				vertex_buffer_size
+				);
 
 		auto index_buffer_data = model->get_index_buffers()[i];
 		const UINT index_buffer_size = static_cast<UINT>(index_buffer_data->get_size_in_bytes());
@@ -299,12 +307,12 @@ void cg::renderer::dx12_renderer::load_assets()
 				index_buffers[i],
 				index_buffer_size,
 				index_buffer_name
-		);
+				);
 
 		copy_data(index_buffer_data->get_data(), index_buffer_size, index_buffers[i]);
-		vertex_buffer_views[i] = create_vertex_buffer_view(
-				vertex_buffers[i],
-				vertex_buffer_size
+		index_buffer_views[i] = create_index_buffer_view(
+				index_buffers[i],
+				index_buffer_size
 				);
 	}
 
