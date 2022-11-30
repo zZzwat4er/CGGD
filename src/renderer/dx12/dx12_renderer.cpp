@@ -56,8 +56,19 @@ void cg::renderer::dx12_renderer::render()
 
 ComPtr<IDXGIFactory4> cg::renderer::dx12_renderer::get_dxgi_factory()
 {
-	// TODO Lab: 3.02 Enable a validation layer
-	return nullptr;
+	UINT dxgi_factory_flags = 0;
+#ifdef _DEBUG
+	ComPtr<ID3D12Debug> debug_controller;
+	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller))))
+	{
+		debug_controller->EnableDebugLayer();
+		dxgi_factory_flags |= DXGI_CREATE_FACTORY_DEBUG;
+	}
+#endif
+
+	ComPtr<IDXGIFactory4> dxgi_factory;
+	THROW_IF_FAILED(CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&dxgi_factory)));
+	return dxgi_factory;
 }
 
 void cg::renderer::dx12_renderer::initialize_device(ComPtr<IDXGIFactory4>& dxgi_factory)
