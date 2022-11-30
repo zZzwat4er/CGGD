@@ -88,7 +88,7 @@ void cg::renderer::dx12_renderer::initialize_device(ComPtr<IDXGIFactory4>& dxgi_
 
 void cg::renderer::dx12_renderer::create_direct_command_queue()
 {
-	D3D12_COMMAND_QUEUE_DESC queue_desc;
+	D3D12_COMMAND_QUEUE_DESC queue_desc{};
 	queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 	queue_desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 
@@ -97,7 +97,7 @@ void cg::renderer::dx12_renderer::create_direct_command_queue()
 
 void cg::renderer::dx12_renderer::create_swap_chain(ComPtr<IDXGIFactory4>& dxgi_factory)
 {
-	DXGI_SWAP_CHAIN_DESC1 swap_chain_desc;
+	DXGI_SWAP_CHAIN_DESC1 swap_chain_desc{};
 	swap_chain_desc.BufferCount = frame_number;
 	swap_chain_desc.Height = settings->height;
 	swap_chain_desc.Width = settings->width;
@@ -146,7 +146,10 @@ void cg::renderer::dx12_renderer::create_command_list()
 
 void cg::renderer::dx12_renderer::load_pipeline()
 {
-	// TODO Lab: 3.02 Bring everything together in `load_pipeline` method
+	ComPtr<IDXGIFactory4> dxgi_factory = get_dxgi_factory();
+	initialize_device(dxgi_factory);
+	create_direct_command_queue();
+	create_swap_chain(dxgi_factory);
 	// TODO Lab: 3.04 Create render target views
 }
 
