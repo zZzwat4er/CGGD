@@ -229,7 +229,9 @@ void cg::renderer::dx12_renderer::load_assets()
 
 	// TODO Lab: 3.04 Create a descriptor heap for a constant buffer
 
-	// TODO Lab: 3.03 Allocate memory for vertex and index buffers
+	vertex_buffers.resize(model->get_vertex_buffers().size());
+	index_buffers.resize(model->get_index_buffers().size());
+
 	// TODO Lab: 3.03 Create committed resources for vertex, index and constant buffers on upload heap
 	// TODO Lab: 3.03 Copy resource data to suitable resources
 	// TODO Lab: 3.04 Create vertex buffer views
