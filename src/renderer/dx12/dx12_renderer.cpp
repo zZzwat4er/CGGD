@@ -256,7 +256,12 @@ void cg::renderer::dx12_renderer::load_assets()
 	// TODO Lab: 3.05 Setup a PSO descriptor and create a PSO
 	// TODO Lab: 3.06 Create command allocators and a command list
 
-	// TODO Lab: 3.04 Create a descriptor heap for a constant buffer
+	cbv_srv_heap.create_heap(
+						device,
+						D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
+						1,
+						D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
+						);
 
 	vertex_buffers.resize(model->get_vertex_buffers().size());
 	index_buffers.resize(model->get_index_buffers().size());
