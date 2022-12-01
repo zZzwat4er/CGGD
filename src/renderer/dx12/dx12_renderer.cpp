@@ -564,7 +564,10 @@ void cg::renderer::dx12_renderer::move_to_next_frame()
 
 void cg::renderer::dx12_renderer::wait_for_gpu()
 {
-	// TODO Lab: 3.07 Implement `wait_for_gpu` method
+	THROW_IF_FAILED(command_queue->Signal(fence.Get(), fence_values[frame_index]));
+	THROW_IF_FAILED(fence->SetEventOnCompletion(fence_values[frame_index], fence_event));
+	WaitForSingleObjectEx(fence_event, INFINITE, FALSE);
+	fence_values[frame_index]++;
 }
 
 
