@@ -175,24 +175,123 @@ D3D12_STATIC_SAMPLER_DESC cg::renderer::dx12_renderer::get_sampler_descriptor()
 
 void cg::renderer::dx12_renderer::create_root_signature(const D3D12_STATIC_SAMPLER_DESC* sampler_descriptors, UINT num_sampler_descriptors)
 {
-	// TODO Lab: 3.05 Create a descriptor table and a root signature
+	CD3DX12_ROOT_PARAMETER1 root_parameters[1];
+	CD3DX12_DESCRIPTOR_RANGE1 ranges[1];
+
+	ranges[0].Init(
+			D3D12_DESCRIPTOR_RANGE_TYPE_CBV,
+			1,
+			0,
+			0,
+			D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC
+			);
+
+	root_parameters[0].InitAsDescriptorTable(
+			1,
+			&ranges[0],
+			D3D12_SHADER_VISIBILITY_ALL
+			);
+
+	D3D12_FEATURE_DATA_ROOT_SIGNATURE rs_feature_data{};
+	rs_feature_data.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
+
+	if(FAILED(
+				device->CheckFeatureSupport(
+						D3D12_FEATURE_ROOT_SIGNATURE,
+						&rs_feature_data,
+						sizeof(rs_feature_data)
+						)))
+	{
+		rs_feature_data.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
+	}
+	D3D12_ROOT_SIGNATURE_FLAGS rs_flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+	CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rs_descriptor;
+	rs_descriptor.Init_1_1(
+			_countof(root_parameters),
+			root_parameters,
+			num_sampler_descriptors,
+			sampler_descriptors,
+			rs_flags
+			);
+
+	ComPtr<ID3D10Blob> signature;
+	ComPtr<ID3D10Blob> error;
+
+	HRESULT result = D3DX12SerializeVersionedRootSignature(
+			&rs_descriptor,
+			rs_feature_data.HighestVersion,
+			&signature,
+			&error
+			);
+
+	if(FAILED(result))
+	{
+		OutputDebugStringA((char*)error->GetBufferPointer());
+		THROW_IF_FAILED(result);
+	}
+
+	THROW_IF_FAILED(
+			device->CreateRootSignature(
+					0,
+					signature->GetBufferPointer(),
+					signature->GetBufferSize(),
+					IID_PPV_ARGS(&root_signature)));
+
 }
 
 std::filesystem::path cg::renderer::dx12_renderer::get_shader_path(const std::string& shader_name)
 {
-	// TODO Lab: 3.05 Compile shaders
-	return "";
+	WCHAR buffer[MAX_PATH];
+	GetModuleFileName(nullptr, buffer, MAX_PATH);
+	auto shader_path = std::filesystem::path(buffer).parent_path() / shader_name;
+	return shader_path;
 }
 
 ComPtr<ID3DBlob> cg::renderer::dx12_renderer::compile_shader(const std::filesystem::path& shader_path, const std::string& entrypoint, const std::string& target)
 {
-	// TODO Lab: 3.05 Compile shaders
-	return nullptr;
+	ComPtr<ID3D10Blob> shader;
+	ComPtr<ID3D10Blob> error;
+	UINT compiler_flags = 0;
+
+#ifdef _DEBUG
+	compiler_flags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+	HRESULT result = D3DCompileFromFile(
+			shader_path.wstring().c_str(),
+			nullptr,
+			nullptr,
+			entrypoint.c_str(),
+			target.c_str(),
+			compiler_flags,
+			0,
+			&shader,
+			&error
+			);
+
+	if(FAILED(result))
+	{
+		OutputDebugStringA((char*)error->GetBufferPointer());
+		THROW_IF_FAILED(result);
+	}
+
+	return shader;
 }
 
 void cg::renderer::dx12_renderer::create_pso(const std::string& shader_name)
 {
-	// TODO Lab: 3.05 Compile shaders
+	ComPtr<ID3D10Blob> vertex_shader = compile_shader(
+			get_shader_path(shader_name),
+			"VSMain",
+			"vs_5_0"
+			);
+
+	ComPtr<ID3D10Blob> pixel_shader = compile_shader(
+			get_shader_path(shader_name),
+			"PSMain",
+			"ps_5_0"
+	);
+
 	// TODO Lab: 3.05 Setup a PSO descriptor and create a PSO
 }
 
@@ -264,7 +363,8 @@ void cg::renderer::dx12_renderer::create_constant_buffer_view(const ComPtr<ID3D1
 
 void cg::renderer::dx12_renderer::load_assets()
 {
-	// TODO Lab: 3.05 Create a descriptor table and a root signature
+	create_root_signature(nullptr, 0);
+
 	// TODO Lab: 3.05 Setup a PSO descriptor and create a PSO
 	// TODO Lab: 3.06 Create command allocators and a command list
 
