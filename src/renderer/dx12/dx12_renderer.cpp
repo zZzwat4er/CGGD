@@ -478,9 +478,17 @@ void cg::renderer::dx12_renderer::load_assets()
 
 	create_constant_buffer_view(constant_buffer, cbv_srv_heap.get_cpu_descriptor_handle(0));
 
-	// TODO Lab: 3.04 Create index buffer views
-
-	// TODO Lab: 3.07 Create a fence and fence event
+	THROW_IF_FAILED(device->CreateFence(
+			0,
+			D3D12_FENCE_FLAG_NONE,
+			IID_PPV_ARGS(&fence)
+			));
+	fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+	if(fence_event == nullptr)
+	{
+		THROW_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
+	}
+	wait_for_gpu();
 }
 
 
