@@ -508,6 +508,7 @@ void cg::renderer::dx12_renderer::populate_command_list()
 			);
 	command_list->RSSetViewports(1, &view_port);
 	command_list->RSSetScissorRects(1, &scissor_rect);
+	command_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	D3D12_RESOURCE_BARRIER begin_barier[] = {
 			CD3DX12_RESOURCE_BARRIER::Transition(
