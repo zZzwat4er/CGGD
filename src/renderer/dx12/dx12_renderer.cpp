@@ -478,6 +478,8 @@ void cg::renderer::dx12_renderer::load_assets()
 
 	create_constant_buffer_view(constant_buffer, cbv_srv_heap.get_cpu_descriptor_handle(0));
 
+	THROW_IF_FAILED(command_list->Close());
+
 	THROW_IF_FAILED(device->CreateFence(
 			0,
 			D3D12_FENCE_FLAG_NONE,
