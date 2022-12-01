@@ -477,7 +477,66 @@ void cg::renderer::dx12_renderer::load_assets()
 
 void cg::renderer::dx12_renderer::populate_command_list()
 {
-	// TODO Lab: 3.06 Implement `populate_command_list` method
+	THROW_IF_FAILED(command_allocators[frame_index]->Reset());
+	THROW_IF_FAILED(command_list->Reset(command_allocators[frame_index].Get(), pipeline_state.Get()));
+
+	command_list->SetGraphicsRootSignature(root_signature.Get());
+	ID3D12DescriptorHeap* heaps[] = {cbv_srv_heap.get()};
+	command_list->SetDescriptorHeaps(_countof(heaps), heaps);
+	command_list->SetGraphicsRootDescriptorTable(
+			0,
+			cbv_srv_heap.get_gpu_descriptor_handle(0)
+			);
+	command_list->RSSetViewports(1, &view_port);
+	command_list->RSSetScissorRects(1, &scissor_rect);
+
+	D3D12_RESOURCE_BARRIER begin_barier[] = {
+			CD3DX12_RESOURCE_BARRIER::Transition(
+					render_targets[frame_index].Get(),
+					D3D12_RESOURCE_STATE_PRESENT,
+					D3D12_RESOURCE_STATE_RENDER_TARGET
+					)
+	};
+
+	command_list->ResourceBarrier(_countof(begin_barier), begin_barier);
+
+	command_list->OMSetRenderTargets(
+			1,
+			&rtv_heap.get_cpu_descriptor_handle(frame_index),
+			FALSE,
+			nullptr
+			);
+	const float clear_color[] = {0.f, 0.f, 0.f, 0.f};
+	command_list->ClearRenderTargetView(
+			rtv_heap.get_cpu_descriptor_handle(frame_index),
+			clear_color,
+			0,
+			nullptr
+			);
+
+	for(size_t i = 0; i < model->get_vertex_buffers().size(); i++)
+	{
+		command_list->IASetVertexBuffers(0, 1, &vertex_buffer_views[i]);
+		command_list->IASetIndexBuffer(&index_buffer_views[i]);
+		command_list->DrawIndexedInstanced(
+				static_cast<UINT>(model->get_index_buffers()[i]->get_number_of_elements()),
+				1,
+				0,
+				0,
+				0
+				);
+	}
+
+	D3D12_RESOURCE_BARRIER end_barier[] = {
+			CD3DX12_RESOURCE_BARRIER::Transition(
+					render_targets[frame_index].Get(),
+					D3D12_RESOURCE_STATE_RENDER_TARGET,
+					D3D12_RESOURCE_STATE_PRESENT
+					)
+	};
+	command_list->ResourceBarrier(_countof(begin_barier), end_barier);
+
+	THROW_IF_FAILED(command_list->Close());
 }
 
 
